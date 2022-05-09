@@ -18,33 +18,40 @@ import { useSmartEffect } from "../utils/useSmartEffect";
 interface Currencies {
   [key: string]: {
     sign: string;
-    exchangRate: number;
+    exchangeRate: number;
+    amount: number;
   };
 }
 const currencies: Currencies = {
   USD: {
     sign: "$",
-    exchangRate: 25.5,
+    exchangeRate: 25.5,
+    amount: 1,
   },
   EUR: {
     sign: "€",
-    exchangRate: 0.9,
+    exchangeRate: 0.9,
+    amount: 1,
   },
   GBP: {
     sign: "£",
-    exchangRate: 0.8,
+    exchangeRate: 0.8,
+    amount: 1,
   },
   JPY: {
     sign: "¥",
-    exchangRate: 110.5,
+    exchangeRate: 17.888,
+    amount: 100,
   },
   CAD: {
     sign: "C$",
-    exchangRate: 1.3,
+    exchangeRate: 1.3,
+    amount: 1,
   },
   AUD: {
     sign: "A$",
-    exchangRate: 1.4,
+    exchangeRate: 1.4,
+    amount: 1,
   },
 };
 
@@ -52,19 +59,24 @@ export default function Index() {
   const [currency, setCurrency] = React.useState(Object.keys(currencies)[0]);
   const [czk, setCzk] = React.useState(0);
   const [amount, setAmount] = React.useState(0);
+  const currCurrency = currencies[currency];
+  const calcCzk = () =>
+    setCzk((amount / currCurrency.exchangeRate) * currCurrency.amount);
+  const calcForeign = () =>
+    setAmount((czk * currCurrency.exchangeRate) / currCurrency.amount);
 
   useSmartEffect([
     {
       dependency: amount,
-      callback: () => setCzk(amount / currencies[currency].exchangRate),
+      callback: calcCzk,
     },
     {
       dependency: czk,
-      callback: () => setAmount(czk * currencies[currency].exchangRate),
+      callback: calcForeign,
     },
     {
       dependency: currency,
-      callback: () => setAmount(czk * currencies[currency].exchangRate),
+      callback: calcForeign,
     },
   ]);
 
@@ -91,10 +103,9 @@ export default function Index() {
         </Stack>
         <Stack
           spacing={0}
-          direction="row"
-          width={"100%"}
+          width="100%"
           justifyContent="center"
-          sx={{ my: 5 }}
+          sx={{ my: 5, flexDirection: { xs: "column", md: "row" } }}
         >
           <FormControl variant="standard">
             <TextField
@@ -112,9 +123,18 @@ export default function Index() {
             />
           </FormControl>
 
-          <CompareArrowsIcon fontSize="large" sx={{ my: "1rem", mx: 4 }} />
+          <CompareArrowsIcon
+            fontSize="large"
+            sx={{
+              my: 1,
+              mx: { xs: "auto", md: "1rem" },
+            }}
+          />
 
-          <FormControl variant="standard" sx={{ mx: 1 }}>
+          <FormControl
+            variant="standard"
+            sx={{ mx: { xs: 0, md: 1 }, my: { xs: 1, md: 0 } }}
+          >
             <TextField
               label={`Amount of ${currency}`}
               type="number"
