@@ -10,8 +10,8 @@ import Document, {
 import createEmotionServer, {
   EmotionCriticalToChunks,
 } from "@emotion/server/create-instance";
-import theme from "../theme/theme";
-import createEmotionCache from "../theme/createEmotionCache";
+import theme from "../utils/theme/theme";
+import createEmotionCache from "../utils/theme/createEmotionCache";
 
 export default class MyDocument extends Document<{
   emotionStyleTags: React.ReactNode;
