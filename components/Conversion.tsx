@@ -7,21 +7,40 @@ import {
   TextField,
 } from "@mui/material";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
-import { useSmartEffect } from "../utils/useSmartEffect";
-import { FC, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Currencies } from "../types/currency";
 
 export function Conversion({ currencies }: { currencies: Currencies }) {
   const [currency, setCurrency] = useState(Object.keys(currencies)[0]);
-  const [czk, setCzk] = useState(0);
-  const [amount, setAmount] = useState(0);
-  const currCurrency = currencies[currency];
+  const [czk, setCzk] = useState("0.00");
+  const [amount, setAmount] = useState("0.00");
+  const currCurrency = currencies?.[currency];
   const calcCzk = () =>
-    setCzk((amount / currCurrency.exchangeRate) * currCurrency.amount);
-  const calcForeign = () =>
-    setAmount((czk * currCurrency.exchangeRate) / currCurrency.amount);
+    currCurrency &&
+    setCzk(
+      (
+        (Number(amount) * currCurrency.exchangeRate) /
+        currCurrency.amount
+      ).toFixed(2)
+    );
+  const calcForeign = useCallback(
+    () =>
+      currCurrency &&
+      setAmount(
+        (
+          (Number(czk) / currCurrency.exchangeRate) *
+          currCurrency.amount
+        ).toFixed(2)
+      ),
+    [currCurrency, czk]
+  );
 
-  useSmartEffect([
+  useEffect(() => {
+    calcForeign();
+  }, [calcForeign, currency]);
+
+  // Previous solution to show custom hook
+  /* useSmartEffect([
     {
       dependency: amount,
       callback: calcCzk,
@@ -34,18 +53,18 @@ export function Conversion({ currencies }: { currencies: Currencies }) {
       dependency: currency,
       callback: calcForeign,
     },
-  ]);
+  ]); */
 
   return (
     <>
       <FormControl variant="standard">
         <TextField
           label="Amount of CZK"
-          type="number"
           variant="standard"
           inputProps={{ min: 0, step: 1 }}
           value={czk}
-          onChange={(e) => setCzk(Number(e.target.value))}
+          onChange={(e) => setCzk(e.target.value)}
+          onBlur={calcForeign}
           InputProps={{
             endAdornment: <InputAdornment position="start">CZK</InputAdornment>,
           }}
@@ -66,11 +85,11 @@ export function Conversion({ currencies }: { currencies: Currencies }) {
       >
         <TextField
           label={`Amount of ${currency}`}
-          type="number"
           variant="standard"
           inputProps={{ min: 0, step: 1 }}
           value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
+          onChange={(e) => setAmount(e.target.value)}
+          onBlur={calcCzk}
           InputProps={{
             endAdornment: (
               <InputAdornment position="start">{currency}</InputAdornment>
@@ -83,13 +102,17 @@ export function Conversion({ currencies }: { currencies: Currencies }) {
         <Select
           labelId="currency-label"
           value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
+          onChange={(e) => {
+            setCurrency(e.target.value);
+            calcForeign();
+          }}
         >
-          {Object.entries(currencies).map(([curr, { sign }]) => (
-            <MenuItem key={curr} value={curr}>
-              {sign} - {curr}
-            </MenuItem>
-          ))}
+          {currencies &&
+            Object.entries(currencies).map(([curr]) => (
+              <MenuItem key={curr} value={curr}>
+                {curr}
+              </MenuItem>
+            ))}
         </Select>
       </FormControl>
     </>

@@ -2,45 +2,35 @@ import * as React from "react";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { Button, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import { Conversion } from "../components/Conversion";
 import { CurrencyTable } from "../components/CurrencyTable";
 import { Currencies } from "../types/currency";
+import { dehydrate, QueryClient, useQuery } from "react-query";
+import { GetServerSideProps } from "next";
 
-const currencies: Currencies = {
-  USD: {
-    sign: "$",
-    exchangeRate: 25.5,
-    amount: 1,
-  },
-  EUR: {
-    sign: "€",
-    exchangeRate: 0.9,
-    amount: 1,
-  },
-  GBP: {
-    sign: "£",
-    exchangeRate: 0.8,
-    amount: 1,
-  },
-  JPY: {
-    sign: "¥",
-    exchangeRate: 17.888,
-    amount: 100,
-  },
-  CAD: {
-    sign: "C$",
-    exchangeRate: 1.3,
-    amount: 1,
-  },
-  AUD: {
-    sign: "A$",
-    exchangeRate: 1.4,
-    amount: 1,
-  },
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const protocol = req.headers["x-forwarded-proto"] || "http";
+  const baseUrl = req ? `${protocol}://${req.headers.host}` : "";
+
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery("currencies", () =>
+    fetch(baseUrl + "/api/currencies").then((r) => r.json())
+  );
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+  };
 };
 
 export default function Index() {
+  const currencies: Currencies = useQuery("currencies", () =>
+    fetch("/api/currencies").then((r) => r.json())
+  )?.data?.data;
+
   return (
     <>
       <Container maxWidth="sm">
@@ -49,27 +39,16 @@ export default function Index() {
             variant="h4"
             component="h1"
             gutterBottom
-            textAlign={["center"]}
+            textAlign={"center"}
           >
             Exchange rates
           </Typography>
 
-          <Stack
-            spacing={2}
-            direction="row"
-            width={"100%"}
-            justifyContent="center"
-            my={2}
-          >
-            <Button variant="contained" size="large">
-              Refresh
-            </Button>
-          </Stack>
           <Typography
             variant="h5"
             component="h2"
             gutterBottom
-            textAlign={["center"]}
+            textAlign={"center"}
           >
             Converter
           </Typography>
@@ -88,7 +67,7 @@ export default function Index() {
           variant="h5"
           component="h2"
           gutterBottom
-          textAlign={["center"]}
+          textAlign={"center"}
         >
           Exchange rates table
         </Typography>
