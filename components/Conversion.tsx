@@ -62,6 +62,7 @@ export function Conversion({ currencies }: { currencies: Currencies }) {
           label="Amount of CZK"
           variant="standard"
           inputProps={{ min: 0, step: 1 }}
+          type="number"
           value={czk}
           onChange={(e) => setCzk(e.target.value)}
           onBlur={calcForeign}
@@ -87,6 +88,7 @@ export function Conversion({ currencies }: { currencies: Currencies }) {
           label={`Amount of ${currency}`}
           variant="standard"
           inputProps={{ min: 0, step: 1 }}
+          type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           onBlur={calcCzk}
