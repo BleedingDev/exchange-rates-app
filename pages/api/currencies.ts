@@ -50,7 +50,7 @@ function parseCurrency(line: string): Currency {
   };
 }
 
-const currenciesRequest = async (_: NextApiRequest, res: NextApiResponse) => {
+const currencies = async (_: NextApiRequest, res: NextApiResponse) => {
   try {
     const currencies = await fetch(
       "http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt"
@@ -81,4 +81,4 @@ const currenciesRequest = async (_: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export default currenciesRequest;
+export default currencies;
